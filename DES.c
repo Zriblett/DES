@@ -31,7 +31,8 @@ struct BLOCK {
     BLOCKTYPE block;        // the block read
     int size;               // number of "real" bytes in the block, should be 8, unless it's the last block
     struct BLOCK *next;     // pointer to the next block
-};
+} BLOCK;
+
 typedef struct BLOCK *BLOCKLIST;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,7 @@ uint64_t getSubKey(int i) {
 void generateSubKeys(KEYTYPE key) {
     int i;
     for (i = 0; i < 16; i++) {
-        subkeys[i] = ((key << i) | (key >> > (64 - i))) & 0xFFFFFFFFFFFF;
+        subkeys[i] = ((key << i) | (key >> (64 - i))) & 0xFFFFFFFFFFFF;
     }
 }
 
@@ -198,12 +199,12 @@ BLOCKLIST pad_last_block(BLOCKLIST blocks) {
 
     while (temp != NULL) {
         if (temp->size != 8) {
-            temp->block = temp->block & temp->size;
+            temp->block = temp->block | temp->size;
             temp->size = 8;
             return blocks;
         }
 
-        if(temp->next = NULL) {
+        if (temp->next == NULL) {
             temp->next = malloc(sizeof(BLOCK));
             temp->next->next = NULL;
             temp->next->size = 8;
@@ -351,20 +352,93 @@ void decrypt(int argc, char **argv) {
     fclose(decrypted_msg_fp);
 }
 
-int main(int argc, char **argv) {
-    FILE *key_fp = fopen("key.txt", "r");
-    KEYTYPE key = read_key(key_fp);
-    generateSubKeys(key);
-    fclose(key_fp);
+//int main(int argc, char **argv) {
+//    FILE *key_fp = fopen("key.txt", "r");
+//    KEYTYPE key = read_key(key_fp);
+//    generateSubKeys(key);
+//    fclose(key_fp);
+//
+//    if (!strcmp(argv[1], "-enc")) {
+//        encrypt(argc, argv);
+//    } else if (!strcmp(argv[1], "-dec")) {
+//        decrypt(argc, argv);
+//    } else {
+//        printf("First argument should be -enc or -dec\n");
+//    }
+//    return 0;
+//}
 
-    if (!strcmp(argv[1], "-enc")) {
-        encrypt(argc, argv);
-    } else if (!strcmp(argv[1], "-dec")) {
-        decrypt(argc, argv);
-    } else {
-        printf("First argument should be -enc or -dec\n");
+//////////////////// TESTING FUNCTIONS ///////////////////////
+// comment these out later
+
+int testPadding();
+int testPadding2();
+
+int debug = 1;
+
+int main() {
+    int succ = 0;
+    int test = 2;
+
+    succ += testPadding();
+    succ += testPadding2();
+
+    printf("%i out of %i tests passed.\n", succ, test);
+}
+
+int testPadding() {
+
+    BLOCKLIST blocklist = malloc(sizeof(BLOCK));
+
+    blocklist->next = NULL;
+    blocklist->block = 12;
+    blocklist->size = 8;
+
+    if (debug) {
+        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+               (long) blocklist->size);
     }
-    return 0;
+
+    blocklist = pad_last_block(blocklist);
+
+    if (debug) {
+        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+               (long) blocklist->size);
+    }
+
+    if (blocklist->next != NULL) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int testPadding2() {
+
+    BLOCKLIST blocklist = malloc(sizeof(BLOCK));
+
+    blocklist->next = NULL;
+    blocklist->size = 7;
+    blocklist->block = 0xFFFFFF0;
+
+    if (debug) {
+        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+               (long) blocklist->size);
+    }
+
+    blocklist = pad_last_block(blocklist);
+
+    if (debug) {
+        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+               (long) blocklist->size);
+    }
+
+    if (blocklist->block != 0xFFFFFFF8) {
+        return 1;
+    } else {
+        return 0;
+    }
+
 }
 
 
