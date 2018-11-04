@@ -33,7 +33,7 @@ struct BLOCK {
     BLOCKTYPE block;        // the block read
     int size;               // number of "real" bytes in the block, should be 8, unless it's the last block
     struct BLOCK *next;     // pointer to the next block
-}BLOCK;
+} BLOCK;
 
 typedef struct BLOCK *BLOCKLIST;
 
@@ -220,11 +220,11 @@ BLOCKLIST pad_last_block(BLOCKLIST blocks) {
     return blocks;
 }
 
-void print_blockList(BLOCKLIST list){
+void print_blockList(BLOCKLIST list) {
     int i = 0;
-    
-    while(list->next != NULL){
-        printf("%llu\n", list->block);
+
+    while (list->next != NULL) {
+        printf("%lu\n", list->block);
         i++;
     }
 }
@@ -236,55 +236,82 @@ void print_blockList(BLOCKLIST list){
 BLOCKLIST read_cleartext_message(FILE *msg_fp) {
     // TODO
     // call pad_last_block() here to pad the last block!
-    
-    int c;
-    int i = 0;
-    BLOCKLIST list = (BLOCKLIST) malloc(sizeof(BLOCK));
-    BLOCKLIST tempList  = list;
-    char tempCharList[8];
-    
-    while((c = fgetc(msg_fp)) != EOF){
-        if(i < 8){
-            tempCharList[i] = c;
-            i++;
-        }
-        if(i == 8){
-            tempList->block = (BLOCKTYPE) tempCharList;
-            tempList->size = 8;
-            tempList->next = malloc(sizeof(BLOCK));
-            tempList = tempList->next;
-            i = 0;
-        }
-//        if(i == 8){
-//            for(i = 0; i < 8; i++){
-//                tempList[i] << i;
-//            }
-//            for(i = 0; i < 8; i++){
-//                block->block &= tempList[i];
-//            }
-//
-//            if(listSize == 0){
-//                block->next = NULL;
-//            }else{
-//                block->next = prevBlock;
-//            }
-//            block->size = 8;
-//
-//        }
+
+    BLOCKLIST list = malloc(sizeof(BLOCK));
+    BLOCKLIST tempList = list;
+    unsigned char tempCharList[8];
+    for (int i = 0; i < 8; i++) {
+        tempCharList[i] = 0;
     }
-    
-    
-   // if(block.size != 8){
-        pad_last_block(list);
-  //  }
-    
-    print_blockList(list);
+
+    int read = 0;
+
+    while ((read = fread(tempCharList, 1, 8, msg_fp)) > 0) {
+
+        printf("READ = %d, STR = %s\n", read, tempCharList);
+
+        tempList->size = read;
+        memcpy(&tempList->block, &tempCharList, sizeof(unsigned long));
+        //tempList->block = tempList->block << 8 - read;
+        tempList->next = malloc(sizeof(BLOCK));
+
+        printf("DATA = %lX\n", tempList->block);
+    }
+
+    fclose(msg_fp);
+
+//    while ((c = fgetc(msg_fp)) != EOF) {
+//        if (i < 7) {
+//            tempCharList[i] = c;
+//            i++;
+//        } else {
+//            tempCharList[i] = c;
+//
+//            BLOCKTYPE block = 0;
+//            for (int j = 0; j < 8; j++) {
+//                printf("%c\n", tempCharList[j]);
+//                BLOCKTYPE temp = (BLOCKTYPE) (tempCharList[j]) << (7 - j);
+//                BLOCKTYPE mask = (0xff) << (7 - j);
+//                temp &= mask;
+//                block = block | temp;
+//                tempCharList[j] = 0;
+//            }
+//
+//            tempList->block = block;
+//            tempList->size = 8;
+//            tempList->next = malloc(sizeof(BLOCK));
+//            tempList = tempList->next;
+//            i = 0;
+//        }
+//    }
+//
+//    if (i != 0) {
+//        BLOCKTYPE block = 0;
+//        for (int j = 0; j < 8; j++) {
+//            printf("%c\n", tempCharList[j]);
+//            BLOCKTYPE temp = (BLOCKTYPE) tempCharList[j] << (7 - j);
+//            printf("%lx\n", temp);
+//            block = block | temp;
+//        }
+//
+//        tempList->block = block;
+//        tempList->size = 8;
+//        tempList->next = malloc(sizeof(BLOCK));
+//        tempList = tempList->next;
+//        i = 0;
+//    }
+
+
+    // if(block.size != 8){
+    list = pad_last_block(list);
+    //  }
+
+    //print_blockList(list);
     return list;
 }
 
 
-
-// Reads the encrypted message, and returns a linked list of blocks, each 64 bits. 
+// Reads the encrypted message, and returns a linked list of blocks, each 64 bits.
 // Note that, because of the padding that was done by the encryption, the length of 
 // this file should always be a multiople of 8 bytes. The output is a linked list of
 // 64-bit blocks.
@@ -428,16 +455,20 @@ void decrypt(int argc, char **argv) {
 // comment these out later
 
 int testPadding();
+
 int testPadding2();
+
+int testMessageRead();
 
 int debug = 1;
 
 int main() {
     int succ = 0;
-    int test = 2;
+    int test = 3;
 
     succ += testPadding();
     succ += testPadding2();
+    succ += testMessageRead();
 
     printf("%i out of %i tests passed.\n", succ, test);
 }
@@ -451,6 +482,7 @@ int testPadding() {
     blocklist->size = 8;
 
     if (debug) {
+        printf("TEST1\n-----\n");
         printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
                (long) blocklist->size);
     }
@@ -474,10 +506,11 @@ int testPadding2() {
     BLOCKLIST blocklist = malloc(sizeof(BLOCK));
 
     blocklist->next = NULL;
-    blocklist->size = 7;
-    blocklist->block = 0xFFFFFF0;
+    blocklist->size = 2;
+    blocklist->block = 0xFFFF000000000000;
 
     if (debug) {
+        printf("TEST2\n-----\n");
         printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
                (long) blocklist->size);
     }
@@ -489,12 +522,29 @@ int testPadding2() {
                (long) blocklist->size);
     }
 
-    if (blocklist->block != 0xFFFFFFF8) {
-        return 1;
-    } else {
+    if (blocklist->block != 0xFFFF000000000002 && blocklist->size != 8) {
         return 0;
+    } else {
+        return 1;
     }
 
+}
+
+int testMessageRead() {
+    FILE *fp = fopen("message.txt", "r");
+    BLOCKLIST blocklist = read_cleartext_message(fp);
+
+    if (debug) {
+        printf("TEST3\n-----\n");
+        printf("Next = %ld\nBlock = %lx\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+               (long) blocklist->size);
+    }
+
+    if (blocklist->block != 0x4100000000000001) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 
