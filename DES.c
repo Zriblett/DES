@@ -27,6 +27,8 @@ typedef uint64_t KEYTYPE;
 typedef uint32_t SUBKEYTYPE;
 typedef uint64_t BLOCKTYPE;
 
+long listSize = 0;
+
 struct BLOCK {
     BLOCKTYPE block;        // the block read
     int size;               // number of "real" bytes in the block, should be 8, unless it's the last block
@@ -204,7 +206,69 @@ BLOCKLIST pad_last_block(BLOCKLIST blocks) {
 BLOCKLIST read_cleartext_message(FILE *msg_fp) {
     // TODO
     // call pad_last_block() here to pad the last block!
-   return NULL;
+    
+    int c;
+    int i = 0;
+    
+    BLOCK prevBlock = malloc(sizeof(BLOCK));
+    BLOCK block = malloc(sizeof(BLOCK));
+    BLOCKLIST list = malloc(sizeof(BLOCKLIST));
+    
+    BLOCKTYPE tempList[8];
+    
+    BLOCKTYPE char0;
+    BLOCKTYPE char1;
+    block->block = 0;
+    
+    
+    while((c = fgets(msg_fp)) != EOF){
+        if(i < 8){
+            tempList[i] = (BLOCKTYPE) c;
+            block->size++;
+            i++;
+        }
+        if(i == 8){
+            block->block = (BLOCKTYPE) &tempList;
+            if(listSize != 0) prevBlock->next = block;
+            prevBlock = block;
+            listSize++;
+            i = 0;
+        }
+//        if(i == 8){
+//            for(i = 0; i < 8; i++){
+//                tempList[i] << i;
+//            }
+//            for(i = 0; i < 8; i++){
+//                block->block &= tempList[i];
+//            }
+//
+//            if(listSize == 0){
+//                block->next = NULL;
+//            }else{
+//                block->next = prevBlock;
+//            }
+//            block->size = 8;
+//
+//        }
+    }
+    
+    
+    BLOCKLIST = &block;
+    if(block->size != 8){
+      //  pad_last_block(BLOCKLIST);
+    }
+    
+    print_blockList();
+   return BLOCKLIST;
+}
+
+void print_blockList(){
+    int i = 0;
+    
+    while(BLOCKLIST[i]->next != NULL){
+        printf("%lu\n", BLOCKLIST[i]->block);
+        i++;
+    }
 }
 
 // Reads the encrypted message, and returns a linked list of blocks, each 64 bits. 
