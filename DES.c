@@ -224,7 +224,7 @@ void print_blockList(BLOCKLIST list) {
     int i = 0;
 
     while (list->next != NULL) {
-        printf("%lu\n", list->block);
+        printf("%llu\n", list->block);
         i++;
     }
 }
@@ -295,6 +295,8 @@ BLOCKLIST read_encrypted_file(FILE *msg_fp) {
 
     fclose(msg_fp);
 
+    
+    
     return list;
 }
 
@@ -310,8 +312,14 @@ KEYTYPE read_key(FILE *key_fp) {
 // Write the encrypted blocks to file. The encrypted file is in binary, i.e., you can
 // just write each 64-bit block directly to the file, without any conversion.
 void write_encrypted_message(FILE *msg_fp, BLOCKLIST msg) {
-    // TODO
+    BLOCKLIST temp = msg;
+    while(temp->next != NULL){
+        int written = fwrite(&temp->block, sizeof(BLOCKTYPE), 1, msg_fp);
+        printf("%d\n", written);
+        temp = temp->next;
+    }
 }
+
 
 // Write the encrypted blocks to file. This is called by the decryption routine.
 // The output file is a plain ASCII file, containing the decrypted text message.
@@ -441,14 +449,21 @@ int testMessageRead();
 int debug = 1;
 
 int main() {
-    int succ = 0;
-    int test = 3;
-
-    succ += testPadding();
-    succ += testPadding2();
-    succ += testMessageRead();
-
-    printf("%i out of %i tests passed.\n", succ, test);
+//    int succ = 0;
+//    int test = 3;
+//
+//    succ += testPadding();
+//    succ += testPadding2();
+//    succ += testMessageRead();
+    
+    FILE *file = fopen("message.txt", "r");
+    FILE *file1 = fopen("output1.txt", "w");
+    
+    BLOCKLIST temp = read_cleartext_message(file);
+    
+    write_encrypted_message(file1, temp);
+    
+  //  printf("%i out of %i tests passed.\n", succ, test);
 }
 
 int testPadding() {
