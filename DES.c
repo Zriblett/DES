@@ -305,8 +305,19 @@ BLOCKLIST read_encrypted_file(FILE *msg_fp) {
 // that the key hasn't been corrupted in transit. The key file is ASCII, consisting of
 // exactly one line. That line has a single hex number on it, the key, such as 0x08AB674D9.
 KEYTYPE read_key(FILE *key_fp) {
-    // TODO
-    return 0;
+
+    KEYTYPE key = 0;
+    char ch;
+
+    while (((ch = getc(key_fp)) != '\n') && (ch != EOF)) {
+        if (ch >= '0' && ch <= '9') {
+            key = 16 * key + (ch - '0');
+        } else {
+            key = 16 * key + (ch - 'A') + 10;
+        }
+    }
+
+    return key;
 }
 
 // Write the encrypted blocks to file. The encrypted file is in binary, i.e., you can
@@ -446,15 +457,11 @@ int testPadding2();
 
 int testMessageRead();
 
+int testReadKey();
+
 int debug = 1;
 
 int main() {
-//    int succ = 0;
-//    int test = 3;
-//
-//    succ += testPadding();
-//    succ += testPadding2();
-//    succ += testMessageRead();
     
     FILE *file = fopen("message.txt", "r");
     FILE *file1 = fopen("output1.txt", "w");
@@ -463,7 +470,15 @@ int main() {
     
     write_encrypted_message(file1, temp);
     
-  //  printf("%i out of %i tests passed.\n", succ, test);
+    int succ = 0;
+    int test = 4;
+
+    succ += testPadding();
+    succ += testPadding2();
+    succ += testMessageRead();
+    succ += testReadKey();
+
+    printf("%i out of %i tests passed.\n", succ, test);
 }
 
 int testPadding() {
@@ -537,6 +552,22 @@ int testMessageRead() {
         return 0;
     } else {
         return 1;
+    }
+}
+
+int testReadKey() {
+    FILE *fp = fopen("key.txt", "r");
+    KEYTYPE key = read_key(fp);
+
+    if (debug) {
+        printf("TEST4\n-----\n");
+        printf("key = %lX\n",key);
+    }
+
+    if(key == 0x00DEADBEEFDEADBE) {
+        return 1;
+    } else {
+        return 0;
     }
 }
 
