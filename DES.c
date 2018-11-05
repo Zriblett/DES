@@ -246,9 +246,6 @@ BLOCKLIST read_cleartext_message(FILE *msg_fp) {
     int read = 0;
 
     while ((read = fread(tempCharList, 1, 8, msg_fp)) > 0) {
-
-        printf("READ = %d, STR = %s\n", read, tempCharList);
-
         for (int i = 0; i < 4; i++) {
             char temp = tempCharList[i];
             tempCharList[i] = tempCharList[7 - i];
@@ -257,19 +254,13 @@ BLOCKLIST read_cleartext_message(FILE *msg_fp) {
 
         tempList->size = read;
         memcpy(&tempList->block, &tempCharList, sizeof(unsigned long));
-        //tempList->block = tempList->block << 8 - read;
         tempList->next = malloc(sizeof(BLOCK));
-
-        printf("DATA = %lX\n", tempList->block);
     }
 
     fclose(msg_fp);
 
-    // if(block.size != 8){
     list = pad_last_block(list);
-    //  }
 
-    //print_blockList(list);
     return list;
 }
 
@@ -279,8 +270,32 @@ BLOCKLIST read_cleartext_message(FILE *msg_fp) {
 // this file should always be a multiople of 8 bytes. The output is a linked list of
 // 64-bit blocks.
 BLOCKLIST read_encrypted_file(FILE *msg_fp) {
-    // TODO
-    return NULL;
+    BLOCKLIST list = malloc(sizeof(BLOCK));
+    BLOCKLIST tempList = list;
+    unsigned char tempCharList[8];
+
+    // TODO make sure I need to do this
+    for (int i = 0; i < 8; i++) {
+        tempCharList[i] = 0;
+    }
+
+    int read = 0;
+
+    while ((read = fread(tempCharList, 1, 8, msg_fp)) > 0) {
+        for (int i = 0; i < 4; i++) {
+            char temp = tempCharList[i];
+            tempCharList[i] = tempCharList[7 - i];
+            tempCharList[7 - i] = temp;
+        }
+
+        tempList->size = read;
+        memcpy(&tempList->block, &tempCharList, sizeof(unsigned long));
+        tempList->next = malloc(sizeof(BLOCK));
+    }
+
+    fclose(msg_fp);
+
+    return list;
 }
 
 // Reads 56-bit key into a 64 bit unsigned int. We will ignore the most significant byte,
