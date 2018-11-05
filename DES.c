@@ -234,7 +234,6 @@ void print_blockList(BLOCKLIST list) {
 // from the input file, and convert them (just a C cast) to 64 bits; this is your first block.
 // Continue to the end of the file.
 BLOCKLIST read_cleartext_message(FILE *msg_fp) {
-    // TODO
     // call pad_last_block() here to pad the last block!
 
     BLOCKLIST list = malloc(sizeof(BLOCK));
@@ -250,6 +249,12 @@ BLOCKLIST read_cleartext_message(FILE *msg_fp) {
 
         printf("READ = %d, STR = %s\n", read, tempCharList);
 
+        for (int i = 0; i < 4; i++) {
+            char temp = tempCharList[i];
+            tempCharList[i] = tempCharList[7 - i];
+            tempCharList[7 - i] = temp;
+        }
+
         tempList->size = read;
         memcpy(&tempList->block, &tempCharList, sizeof(unsigned long));
         //tempList->block = tempList->block << 8 - read;
@@ -259,48 +264,6 @@ BLOCKLIST read_cleartext_message(FILE *msg_fp) {
     }
 
     fclose(msg_fp);
-
-//    while ((c = fgetc(msg_fp)) != EOF) {
-//        if (i < 7) {
-//            tempCharList[i] = c;
-//            i++;
-//        } else {
-//            tempCharList[i] = c;
-//
-//            BLOCKTYPE block = 0;
-//            for (int j = 0; j < 8; j++) {
-//                printf("%c\n", tempCharList[j]);
-//                BLOCKTYPE temp = (BLOCKTYPE) (tempCharList[j]) << (7 - j);
-//                BLOCKTYPE mask = (0xff) << (7 - j);
-//                temp &= mask;
-//                block = block | temp;
-//                tempCharList[j] = 0;
-//            }
-//
-//            tempList->block = block;
-//            tempList->size = 8;
-//            tempList->next = malloc(sizeof(BLOCK));
-//            tempList = tempList->next;
-//            i = 0;
-//        }
-//    }
-//
-//    if (i != 0) {
-//        BLOCKTYPE block = 0;
-//        for (int j = 0; j < 8; j++) {
-//            printf("%c\n", tempCharList[j]);
-//            BLOCKTYPE temp = (BLOCKTYPE) tempCharList[j] << (7 - j);
-//            printf("%lx\n", temp);
-//            block = block | temp;
-//        }
-//
-//        tempList->block = block;
-//        tempList->size = 8;
-//        tempList->next = malloc(sizeof(BLOCK));
-//        tempList = tempList->next;
-//        i = 0;
-//    }
-
 
     // if(block.size != 8){
     list = pad_last_block(list);
@@ -540,7 +503,7 @@ int testMessageRead() {
                (long) blocklist->size);
     }
 
-    if (blocklist->block != 0x4100000000000001) {
+    if (blocklist->block != 0x410A000000000002) {
         return 0;
     } else {
         return 1;
