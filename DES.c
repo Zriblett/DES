@@ -335,7 +335,16 @@ void write_encrypted_message(FILE *msg_fp, BLOCKLIST msg) {
 // Write the encrypted blocks to file. This is called by the decryption routine.
 // The output file is a plain ASCII file, containing the decrypted text message.
 void write_decrypted_message(FILE *msg_fp, BLOCKLIST msg) {
-    // TODO
+    BLOCKLIST temp = msg;
+    char *currBlock;
+    while(temp->next != NULL){
+        currBlock = (char*) temp->block;
+        fwrite(&currBlock, 1, sizeof(currBlock), msg_fp);
+    }//here we are at the end of the blockList
+    int len = (int) (temp->block & 0xF);
+    char *lastBlock;
+    memcpy(&lastBlock, &temp->block, sizeof(len));
+    fwrite(&lastBlock, 1, sizeof(lastBlock), msg_fp);
 }
 
 /////////////////////////////////////////////////////////////////////////////
