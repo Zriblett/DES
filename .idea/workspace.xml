@@ -9,10 +9,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a1dfd5f7-2b6f-467c-ab02-d806703e2ced" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DES.c" beforeDir="false" afterPath="$PROJECT_DIR$/DES.c" afterDir="false" />
-    </list>
+    <list default="true" id="a1dfd5f7-2b6f-467c-ab02-d806703e2ced" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -63,8 +60,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/DES.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2041">
-              <caret line="641" lean-forward="true" selection-start-line="641" selection-end-line="641" />
+            <state relative-caret-position="-240">
+              <caret line="538" column="2" selection-start-line="538" selection-end-line="538" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -162,12 +159,12 @@
       <updated>1541352749455</updated>
       <workItem from="1541352750615" duration="12393000" />
       <workItem from="1541458428244" duration="4977000" />
-      <workItem from="1541567129620" duration="4445000" />
+      <workItem from="1541567129620" duration="4531000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="21815000" />
+    <option name="totallyTimeSpent" value="21901000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="6" />
@@ -203,8 +200,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/DES.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2041">
-          <caret line="641" lean-forward="true" selection-start-line="641" selection-end-line="641" />
+        <state relative-caret-position="-240">
+          <caret line="538" column="2" selection-start-line="538" selection-end-line="538" selection-end-column="2" />
         </state>
       </provider>
     </entry>
