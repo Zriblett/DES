@@ -10,7 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a1dfd5f7-2b6f-467c-ab02-d806703e2ced" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/DES" beforeDir="false" afterPath="$PROJECT_DIR$/DES" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DES.c" beforeDir="false" afterPath="$PROJECT_DIR$/DES.c" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -24,6 +24,7 @@
     <session id="1964180193">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
+          <entry key="project.closed" value="1" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.5" value="1" />
           <entry key="project.opened" value="2" />
@@ -43,13 +44,13 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="c" value="3149" />
+          <entry key="c" value="3246" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Doxygen file" value="2" />
-          <entry key="ObjectiveC" value="3147" />
+          <entry key="ObjectiveC" value="3244" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -61,8 +62,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/DES.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="521">
-              <caret line="537" column="17" lean-forward="true" selection-start-line="537" selection-start-column="17" selection-end-line="537" selection-end-column="17" />
+            <state relative-caret-position="203">
+              <caret line="350" column="29" lean-forward="true" selection-start-line="350" selection-start-column="29" selection-end-line="350" selection-end-column="29" />
             </state>
           </provider>
         </entry>
@@ -159,16 +160,15 @@
       <option name="presentableId" value="Default" />
       <updated>1541352749455</updated>
       <workItem from="1541352750615" duration="12393000" />
-      <workItem from="1541458428244" duration="2767000" />
+      <workItem from="1541458428244" duration="4977000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="15160000" />
+    <option name="totallyTimeSpent" value="17370000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2524013" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -200,8 +200,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/DES.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="521">
-          <caret line="537" column="17" lean-forward="true" selection-start-line="537" selection-start-column="17" selection-end-line="537" selection-end-column="17" />
+        <state relative-caret-position="203">
+          <caret line="350" column="29" lean-forward="true" selection-start-line="350" selection-start-column="29" selection-end-line="350" selection-end-column="29" />
         </state>
       </provider>
     </entry>
