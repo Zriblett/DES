@@ -295,8 +295,7 @@ BLOCKLIST read_encrypted_file(FILE *msg_fp) {
 
     fclose(msg_fp);
 
-    
-    
+
     return list;
 }
 
@@ -324,7 +323,7 @@ KEYTYPE read_key(FILE *key_fp) {
 // just write each 64-bit block directly to the file, without any conversion.
 void write_encrypted_message(FILE *msg_fp, BLOCKLIST msg) {
     BLOCKLIST temp = msg;
-    while(temp->next != NULL){
+    while (temp->next != NULL) {
         int written = fwrite(&temp->block, sizeof(BLOCKTYPE), 1, msg_fp);
         printf("%d\n", written);
         temp = temp->next;
@@ -355,8 +354,10 @@ void write_decrypted_message(FILE *msg_fp, BLOCKLIST msg) {
 // one 64-bit block as input, and returns the encrypted 64-bit block. The 
 // subkeys needed by the Feistel Network is given by the function getSubKey(i).
 BLOCKTYPE des_enc(BLOCKTYPE v) {
-    // TODO
-    return 0;
+    BLOCKTYPE left = v & 0xFFFFFFFF00000000;
+    BLOCKTYPE right = v & 0x00000000FFFFFFFF;
+
+    uint64_t key = getSubKey();
 }
 
 // Encrypt the blocks in ECB mode. The blocks have already been padded 
@@ -471,14 +472,14 @@ int testReadKey();
 int debug = 1;
 
 int main() {
-    
+
     FILE *file = fopen("message.txt", "r");
     FILE *file1 = fopen("output1.txt", "w");
-    
+
     BLOCKLIST temp = read_cleartext_message(file);
-    
+
     write_encrypted_message(file1, temp);
-    
+
     int succ = 0;
     int test = 4;
 
@@ -570,10 +571,10 @@ int testReadKey() {
 
     if (debug) {
         printf("TEST4\n-----\n");
-        printf("key = %lX\n",key);
+        printf("key = %lX\n", key);
     }
 
-    if(key == 0x00DEADBEEFDEADBE) {
+    if (key == 0x00DEADBEEFDEADBE) {
         return 1;
     } else {
         return 0;
