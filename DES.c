@@ -345,18 +345,64 @@ void write_decrypted_message(FILE *msg_fp, BLOCKLIST msg) {
 // one 64-bit block as input, and returns the encrypted 64-bit block. The 
 // subkeys needed by the Feistel Network is given by the function getSubKey(i).
 BLOCKTYPE des_enc(BLOCKTYPE v) {
-    BLOCKTYPE left = v & 0xFFFFFFFF00000000;
-    BLOCKTYPE right = v & 0x00000000FFFFFFFF;
 
-    uint64_t key = getSubKey();
+    // permute the block
+    for (int i = 0; i < 64; i++) {
+        int swap = init_perm[i];
+        int bit1 = (v >> i) & 1u;
+        int bit2 = (v >> swap) & 1u;
+        int x = bit1 ^bit2;
+        x = (x << i) | (x << swap);
+        v = v ^ x;
+    }
+
+    BLOCKTYPE left = (v & 0xFFFFFFFF00000000) >> 32;
+    BLOCKTYPE right = v & 0x00000000FFFFFFFF;
+    for (int i = 0; i < 16; i++) {
+        uint64_t key = getSubKey(i);
+
+        right = right ^ key;
+
+        left = left ^ right;
+
+        BLOCKTYPE temp = right;
+        right = left;
+        left = temp;
+    }
+    BLOCKTYPE temp = right;
+    right = left;
+    left = temp;
+    left = left << 32;
+    right = right & 0x00000000FFFFFFFF;
+    return left | right;
+
 }
 
 // Encrypt the blocks in ECB mode. The blocks have already been padded 
 // by the input routine. The output is an encrypted list of blocks.
 BLOCKLIST des_enc_ECB(BLOCKLIST msg) {
-    // TODO
+
     // Should call des_enc in here repeatedly
-    return NULL;
+    BLOCKLIST enc = malloc(sizeof(BLOCK));
+    BLOCKLIST walker = enc;
+    int i = 0;
+
+    if (msg == NULL)
+        return NULL;
+
+    while (msg != NULL) {
+        walker->next = NULL;
+        walker->size = 8;
+        walker->block = des_enc(msg->block);
+        msg = msg->next;
+        if (msg != NULL) {
+            walker->next = malloc(sizeof(BLOCK));
+            walker = walker->next;
+        }
+
+    }
+
+    return enc;
 }
 
 // Same as des_enc_ECB, but encrypt the blocks in Counter mode.
@@ -365,7 +411,29 @@ BLOCKLIST des_enc_ECB(BLOCKLIST msg) {
 BLOCKLIST des_enc_CTR(BLOCKLIST msg) {
     // TODO
     // Should call des_enc in here repeatedly
-    return NULL;
+    BLOCKLIST enc = malloc(sizeof(BLOCK));
+    BLOCKLIST walker = enc;
+    uint64_t iv = 0xDEADBEEFBEEFFACE; // initial value
+    int i = 0;
+
+    if (msg == NULL)
+        return NULL;
+
+    while (msg != NULL) {
+        walker->next = NULL;
+        walker->size = 8;
+        BLOCKTYPE block = walker->block ^ iv;
+        walker->block = des_enc(block);
+        iv = walker->block;
+        msg = msg->next;
+        if (msg != NULL) {
+            walker->next = malloc(sizeof(BLOCK));
+            walker = walker->next;
+        }
+
+    }
+
+    return enc;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -433,144 +501,144 @@ void decrypt(int argc, char **argv) {
     fclose(decrypted_msg_fp);
 }
 
-//int main(int argc, char **argv) {
-//    FILE *key_fp = fopen("key.txt", "r");
-//    KEYTYPE key = read_key(key_fp);
-//    generateSubKeys(key);
-//    fclose(key_fp);
-//
-//    if (!strcmp(argv[1], "-enc")) {
-//        encrypt(argc, argv);
-//    } else if (!strcmp(argv[1], "-dec")) {
-//        decrypt(argc, argv);
-//    } else {
-//        printf("First argument should be -enc or -dec\n");
-//    }
-//    return 0;
-//}
+int main(int argc, char **argv) {
+    FILE *key_fp = fopen("key.txt", "r");
+    KEYTYPE key = read_key(key_fp);
+    generateSubKeys(key);
+    fclose(key_fp);
+
+    if (!strcmp(argv[1], "-enc")) {
+        encrypt(argc, argv);
+    } else if (!strcmp(argv[1], "-dec")) {
+        decrypt(argc, argv);
+    } else {
+        printf("First argument should be -enc or -dec\n");
+    }
+    return 0;
+}
 
 //////////////////// TESTING FUNCTIONS ///////////////////////
 // comment these out later
 
-int testPadding();
-
-int testPadding2();
-
-int testMessageRead();
-
-int testReadKey();
-
-int debug = 1;
-
-int main() {
-
-    FILE *file = fopen("message.txt", "r");
-    FILE *file1 = fopen("output1.txt", "w");
-
-    BLOCKLIST temp = read_cleartext_message(file);
-
-    write_encrypted_message(file1, temp);
-
-    int succ = 0;
-    int test = 4;
-
-    succ += testPadding();
-    succ += testPadding2();
-    succ += testMessageRead();
-    succ += testReadKey();
-
-    printf("%i out of %i tests passed.\n", succ, test);
-}
-
-int testPadding() {
-
-    BLOCKLIST blocklist = malloc(sizeof(BLOCK));
-
-    blocklist->next = NULL;
-    blocklist->block = 12;
-    blocklist->size = 8;
-
-    if (debug) {
-        printf("TEST1\n-----\n");
-        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
-               (long) blocklist->size);
-    }
-
-    blocklist = pad_last_block(blocklist);
-
-    if (debug) {
-        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
-               (long) blocklist->size);
-    }
-
-    if (blocklist->next != NULL) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-int testPadding2() {
-
-    BLOCKLIST blocklist = malloc(sizeof(BLOCK));
-
-    blocklist->next = NULL;
-    blocklist->size = 2;
-    blocklist->block = 0xFFFF000000000000;
-
-    if (debug) {
-        printf("TEST2\n-----\n");
-        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
-               (long) blocklist->size);
-    }
-
-    blocklist = pad_last_block(blocklist);
-
-    if (debug) {
-        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
-               (long) blocklist->size);
-    }
-
-    if (blocklist->block != 0xFFFF000000000002 && blocklist->size != 8) {
-        return 0;
-    } else {
-        return 1;
-    }
-
-}
-
-int testMessageRead() {
-    FILE *fp = fopen("message.txt", "r");
-    BLOCKLIST blocklist = read_cleartext_message(fp);
-
-    if (debug) {
-        printf("TEST3\n-----\n");
-        printf("Next = %ld\nBlock = %lx\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
-               (long) blocklist->size);
-    }
-
-    if (blocklist->block != 0x410A000000000002) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int testReadKey() {
-    FILE *fp = fopen("key.txt", "r");
-    KEYTYPE key = read_key(fp);
-
-    if (debug) {
-        printf("TEST4\n-----\n");
-        printf("key = %lX\n", key);
-    }
-
-    if (key == 0x00DEADBEEFDEADBE) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
+//int testPadding();
+//
+//int testPadding2();
+//
+//int testMessageRead();
+//
+//int testReadKey();
+//
+//int debug = 1;
+//
+//int main() {
+//
+//    FILE *file = fopen("message.txt", "r");
+//    FILE *file1 = fopen("output1.txt", "w");
+//
+//    BLOCKLIST temp = read_cleartext_message(file);
+//
+//    write_encrypted_message(file1, temp);
+//
+//    int succ = 0;
+//    int test = 4;
+//
+//    succ += testPadding();
+//    succ += testPadding2();
+//    succ += testMessageRead();
+//    succ += testReadKey();
+//
+//    printf("%i out of %i tests passed.\n", succ, test);
+//}
+//
+//int testPadding() {
+//
+//    BLOCKLIST blocklist = malloc(sizeof(BLOCK));
+//
+//    blocklist->next = NULL;
+//    blocklist->block = 12;
+//    blocklist->size = 8;
+//
+//    if (debug) {
+//        printf("TEST1\n-----\n");
+//        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+//               (long) blocklist->size);
+//    }
+//
+//    blocklist = pad_last_block(blocklist);
+//
+//    if (debug) {
+//        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+//               (long) blocklist->size);
+//    }
+//
+//    if (blocklist->next != NULL) {
+//        return 1;
+//    } else {
+//        return 0;
+//    }
+//}
+//
+//int testPadding2() {
+//
+//    BLOCKLIST blocklist = malloc(sizeof(BLOCK));
+//
+//    blocklist->next = NULL;
+//    blocklist->size = 2;
+//    blocklist->block = 0xFFFF000000000000;
+//
+//    if (debug) {
+//        printf("TEST2\n-----\n");
+//        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+//               (long) blocklist->size);
+//    }
+//
+//    blocklist = pad_last_block(blocklist);
+//
+//    if (debug) {
+//        printf("Next = %ld\nBlock = %ld\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+//               (long) blocklist->size);
+//    }
+//
+//    if (blocklist->block != 0xFFFF000000000002 && blocklist->size != 8) {
+//        return 0;
+//    } else {
+//        return 1;
+//    }
+//
+//}
+//
+//int testMessageRead() {
+//    FILE *fp = fopen("message.txt", "r");
+//    BLOCKLIST blocklist = read_cleartext_message(fp);
+//
+//    if (debug) {
+//        printf("TEST3\n-----\n");
+//        printf("Next = %ld\nBlock = %lx\nSize = %ld\n", (long) blocklist->next, (long) blocklist->block,
+//               (long) blocklist->size);
+//    }
+//
+//    if (blocklist->block != 0x410A000000000002) {
+//        return 0;
+//    } else {
+//        return 1;
+//    }
+//}
+//
+//int testReadKey() {
+//    FILE *fp = fopen("key.txt", "r");
+//    KEYTYPE key = read_key(fp);
+//
+//    if (debug) {
+//        printf("TEST4\n-----\n");
+//        printf("key = %lX\n", key);
+//    }
+//
+//    if (key == 0x00DEADBEEFDEADBE) {
+//        return 1;
+//    } else {
+//        return 0;
+//    }
+//}
 
 
 
